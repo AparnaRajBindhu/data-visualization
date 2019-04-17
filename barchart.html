@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+    <script src="scripts/app.js"></script>
+      <style>
+          body{
+              background-image: url(images/background.jpg);
+              background-repeat: repeat;
+          }
+      </style>
+  </head>
+  <body>
+   <nav class="navbar navbar-default">
+      <div class="container">
+
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">MAP/PIE</a></li>
+            <li><a href="barchart.html">BAR_CHART</a></li>
+              <li><a href="tree.html">TREE_CHART</a></li>
+              <li><a href="sankey.html">SANKEY_DIAGRAM</a></li>
+          </ul>
+        </div>
+      </div>
+  </nav>
+      
+      <div  id="bar_chart">
+          <h2>BAR CHART - 2010 censes population</h2>
+          <input type="submit" value="Click me!!" class="btn btn-primary btn-success" style="margin-left: 50px" onclick="barChart()"><br><br>
+      </div>
+    <div class="col-sm-6">
+        <svg style="width: 800;height: 500px; border: 1px solid black"></svg>
+    </div>
+      
+    
+  <script>
+ 
+      function barChart() {
+          console.log("inside barchart fun");
+           d3.csv("population.csv",(error,data)=> {
+                  if(error) {
+                console.log('Error : ',error);
+            }   else {
+              //  console.log('Data : ',data);
+                dataViz(data)
+
+            } 
+
+            });
+            function dataViz(incomingData) {
+                console.log('Data : ', incomingData);
+               var maxPop = d3.max(incomingData, d => +d.TotalPopulation);
+              // console.log('Max : ',maxMarketShare );
+                
+                var yScale = d3.scaleLinear()
+      				 .domain([0,maxPop])
+      				 .range([0,460])
+                      .clamp(true);              
+                
+                d3.select("svg")
+                .selectAll("rect")
+                .data(incomingData)
+                .enter()
+                .append("rect")
+                .attr("width", 50)
+                .attr("height", d => yScale(d.TotalPopulation))
+                .attr("x", (d,i) => i * 70)
+                .attr("y", d => 480 - yScale(d.TotalPopulation))
+                .style("fill", "#27477a")
+                .style("stroke", "#e8e6c0")
+                .style("stroke-width", "1px");
+            }
+         
+              }
+	 
+  </script>
+  </body>
+</html>

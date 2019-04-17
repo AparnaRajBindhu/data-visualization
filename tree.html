@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+    <script src="scripts/app.js"></script>
+      <style>
+          body{
+              background-image: url(images/background.jpg);
+              background-repeat: repeat;
+          }
+      </style>
+  </head>
+  <body>
+      <nav class="navbar navbar-default">
+      <div class="container">
+
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">MAP/PIE</a></li>
+            <li><a href="barchart.html">BAR_CHART</a></li>
+              <li><a href="tree.html">TREE_CHART</a></li>
+              <li><a href="sankey.html">SANKEY_DIAGRAM</a></li>
+          </ul>
+        </div>
+      </div>
+  </nav>
+    <div  id="bar_chart">
+          <h2>TREE CHART - TWEETS TREE</h2>
+          <input type="submit" value="Click me!!" class="btn btn-primary btn-success" style="margin-left: 50px" onclick="treeChart()"><br><br>
+      </div>
+    <div class="col-sm-6">
+        <svg style="width: 800;height: 500px; border: 1px solid black"></svg>
+    </div>
+  <script>
+      function treeChart() {
+                d3.json("tweets.json", viz)
+      
+      function viz(data) {
+    	  
+        var depthScale = d3.scaleOrdinal()
+          .range(["#5EAFC6", "#FE9922", "#93c464", "#75739F"]);
+        
+        var nestedTweets = d3.nest()
+          .key(d => d.user)
+          .entries(data.tweets);
+        
+        var packableTweets = {id: "All Tweets", values: nestedTweets};
+        
+        var root = d3.hierarchy(packableTweets, d => d.values);
+        
+        var treeChart = d3.tree();
+        treeChart.size([200,200]);
+        
+        var treeData = treeChart(root).descendants();
+        
+        d3.select("svg")
+          .append("g")
+            .attr("id", "treeG")
+            .attr("transform", "translate(250,250)")
+          .selectAll("g")
+          .data(treeData)
+          .enter()
+          .append("g")
+            .attr("class", "node")
+            .attr("transform", d => `translate(${project(d.x, d.y)})`);
+        
+        d3.selectAll("g.node")
+          .append("circle")
+            .attr("r", 10)
+            .style("fill", d => depthScale(d.depth))
+            .style("stroke", "white")
+            .style("stroke-width", "2px");
+        
+        d3.selectAll("g.node")
+          .append("text")
+            .style("text-anchor", "middle")
+            .style("fill", "#4f442b")
+            .text(d => d.data.id || d.data.key || d.data.content);
+        
+        d3.select("#treeG").selectAll("line")
+          .data(treeData.filter(d => d.parent))
+          .enter().insert("line","g")
+            .attr("x1", d => project(d.parent.x, d.parent.y)[0])
+            .attr("y1", d => project(d.parent.x, d.parent.y)[1])
+            .attr("x2", d => project(d.x, d.y)[0])
+            .attr("y2", d => project(d.x, d.y)[1])
+            .style("stroke", "black");
+        
+        function project(x, y) {
+          var angle = x / 90 * Math.PI;
+          var radius = y;
+          return [radius * Math.cos(angle), radius * Math.sin(angle)];
+        }
+      }
+      }
+  </script>
+  </body>
+</html>

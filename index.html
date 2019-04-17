@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+    <script src="scripts/app.js"></script>
+      <style>
+          body{
+              background-image: url(images/background.jpg);
+              background-repeat: repeat;
+          }
+      </style>
+  </head>
+  <body>
+  <nav class="navbar navbar-default">
+      <div class="container">
+
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">MAP/PIE</a></li>
+            <li><a href="barchart.html">BAR_CHART</a></li>
+              <li><a href="tree.html">TREE_CHART</a></li>
+              <li><a href="sankey.html">SANKEY_DIAGRAM</a></li>
+          </ul>
+        </div>
+      </div>
+  </nav>
+    <div ng-app="myApp" ng-controller="countryCtrl" id="container">
+        <form class="form-horizontal" ng-submit="submitSearch(myForm.$valid)" name="myForm" novalidate>
+            <div class="form-group" id="countryResult">
+                <label>Enter a Country Name: </label>
+                <input type="text" class="form-control" id="countryNameInput" ng-model="search" required><br>
+                <input type="submit" value="Click me!!" class="btn btn-primary btn-success"><br><br>
+                
+            </div> 
+        </form>
+        
+       
+    <div class="col-sm-6">
+        <svg style="width: 100%;height: 800px; border: 1px solid black" id="svg1"></svg>
+    </div>
+      
+    <div class="col-sm-6">
+        <svg style="width:100%;height:600px; border: 1px solid black" id="svg2"></svg>
+    </div>
+
+    <script>
+        var worldcuplocations = []
+        var pop = 0;
+        d3.csv("worldcup2.csv",(error,data)=> {
+                 if(error) {
+                    console.log('Error : ',error);
+                    }   
+                 else {
+                    console.log('Data : ',data);
+                     worldCup(data);
+                    } 
+            });
+        function worldCup(data) {
+            data.forEach(d=> {
+                worldcuplocations.push(d.location);
+            })
+            console.log(worldcuplocations);
+        }
+        
+        var elCountryName = document.getElementById('countryNameInput');
+        
+            d3.json("world.geojson", function(createMap) {
+                countries = createMap;
+                var aProjection = d3.geoMercator()
+                    .scale(150)
+                    .translate([250, 250]);
+                var geoPath = d3.geoPath().projection(aProjection);
+
+                d3.select("#svg1").selectAll("path").data(createMap.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", geoPath)
+                console.log(createMap);
+            });
+          function locate() {
+                console.log("locate function");
+                var countryName = elCountryName.value.trim().toLowerCase();
+                console.log(countryName);
+                d3.selectAll("path").style("fill", function(d, i) {
+                    return (countryName == countries.features[i].properties.name.toLowerCase()) ? "red" : "green";
+                });
+            }
+        
+        function callPop(population) {
+                console.log("population: "+population);
+            var pieChart = d3.pie();
+                var yourPie = pieChart([population, 7600000000]);
+
+                var newArc = d3.arc();
+                newArc.innerRadius(0)
+                    .outerRadius(100);
+
+                var fillScale = d3.scaleOrdinal()
+                    .range(["red","green"]);
+
+                d3.select("#svg2")
+                    .append("g")
+                    .attr("transform", "translate(250,250)")
+                    .selectAll("path")
+                    .data(yourPie)
+                    .enter()
+                    .append("path")
+                    .attr("d", newArc)
+                    .style("fill", (d, i) => fillScale(i))
+                    .style("stroke", "black")
+                    .style("stroke-width", "2px");
+        }
+             
+        
+    </script>
+    </div>
+  </body>
+</html>
